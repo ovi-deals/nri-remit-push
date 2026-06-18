@@ -44,3 +44,42 @@ body { background: var(--surface); font-family: 'Inter', system-ui, sans-serif; 
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Amount slider — appearance-none removes ALL native styling (track + thumb),
+   so we have to supply both ourselves rather than relying on accent-color,
+   which only affects the native (non-appearance-none) rendering. */
+input[type="range"].amount-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"].amount-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--saffron);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(15, 31, 61, 0.25);
+  cursor: pointer;
+  margin-top: -1px;
+}
+input[type="range"].amount-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--saffron);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(15, 31, 61, 0.25);
+  cursor: pointer;
+}
+input[type="range"].amount-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}
