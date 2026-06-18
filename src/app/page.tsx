@@ -23,14 +23,34 @@ const LOGO: Record<string, string> = { wise: "W", remitly: "R", xe: "X", ofx: "O
 const BG: Record<string, string> = { wise: "#E6F1FB", remitly: "#EEEDFE", xe: "#FAEEDA", ofx: "#EAF3DE", instarem: "#FAECE7" };
 const FG: Record<string, string> = { wise: "#0C447C", remitly: "#3C3489", xe: "#633806", ofx: "#27500A", instarem: "#712B13" };
 
+// Real provider favicons, fetched live from each company's own domain via
+// Google's favicon service — no logo files are stored or copied in this repo.
+// Falls back to the colored letter circle (LOGO/BG/FG above) if the favicon
+// fails to load (network issue, ad-blocker, etc.) — see ProviderLogo below.
+const FAVICON_DOMAIN: Record<string, string> = {
+  wise: "wise.com",
+  remitly: "remitly.com",
+  xe: "xe.com",
+  ofx: "ofx.com",
+  instarem: "instarem.com",
+};
+function faviconUrl(domain: string, size = 64) {
+  // favicon.im checks multiple sources (HTML link tags, web manifest, Apple
+  // touch icons, /favicon.ico, then Google's service as a last resort) and is
+  // built specifically as a public API — unlike Google's s2/favicons, which
+  // is an undocumented internal endpoint with known rate-limit/reliability
+  // issues for third-party hotlinking.
+  return `https://favicon.im/${domain}${size ? `?larger=true` : ""}`;
+}
+
 interface RateData {
   id: string; name: string; rate: number; youSend: number; theyGet: number;
   rank: number; fee: number; feeType: string; speed: string; cookieDays: string; cpa: string;
-  logo: string; color: string; bg: string; affiliateUrl: string;
+  logo: string; color: string; bg: string; affiliateUrl: string; faviconUrl: string;
 }
 interface RatesResponse {
   midMarketRate: number; avg30d: number; source: string; fetchedAt: string; amount: number;
-  providers: Omit<RateData, "logo" | "color" | "bg" | "affiliateUrl">[];
+  providers: Omit<RateData, "logo" | "color" | "bg" | "affiliateUrl" | "faviconUrl">[];
 }
 interface Alert {
   id: string; type: "rate" | "reminder"; label: string;
@@ -62,6 +82,7 @@ function decorateProviders(data: RatesResponse): RateData[] {
     color: FG[p.id] || "#64748B",
     bg: BG[p.id] || "#F1F5F9",
     affiliateUrl: AFFILIATE_LINKS[p.id] || "#",
+    faviconUrl: faviconUrl(FAVICON_DOMAIN[p.id] || `${p.id}.com`),
   }));
 }
 
@@ -144,6 +165,34 @@ function AIBullets({text}:{text:string}) {
         </li>
       ))}
     </ul>
+  );
+}
+
+// Shows each provider's real favicon (fetched live, never stored in this repo)
+// inside the existing colored circle. If the favicon fails to load — network
+// hiccup, ad-blocker, whatever — it falls back to the plain letter, so the UI
+// never shows a broken image icon.
+function ProviderLogo({faviconSrc,letter,bg,color,size=40,fontSize=15}:{
+  faviconSrc:string; letter:string; bg:string; color:string; size?:number; fontSize?:number;
+}) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div
+      className="rounded-xl flex items-center justify-center font-bold overflow-hidden"
+      style={{width:size,height:size,background:bg,color,fontSize}}
+    >
+      {failed ? letter : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={faviconSrc}
+          alt=""
+          width={Math.round(size*0.55)}
+          height={Math.round(size*0.55)}
+          onError={()=>setFailed(true)}
+          style={{objectFit:"contain"}}
+        />
+      )}
+    </div>
   );
 }
 
@@ -474,8 +523,7 @@ export default function Home() {
                 style={{background:"#fff",border:`0.5px solid ${p.rank===1?"#0A7C4E":"#E5E3DC"}`}}>
                 <div className="flex items-start gap-3">
                   <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold"
-                      style={{background:p.bg,color:p.color,fontSize:15}}>{p.logo}</div>
+                    <ProviderLogo faviconSrc={p.faviconUrl} letter={p.logo} bg={p.bg} color={p.color}/>
                     {p.rank===1&&(
                       <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{background:"#0A7C4E"}}>
                         <Star size={8} color="#fff" fill="#fff"/>
