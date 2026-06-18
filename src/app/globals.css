@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --saffron: #E8751A;
+  --saffron-light: #FEF3E8;
+  --saffron-mid: #FDDBB4;
+  --rupee-green: #0A7C4E;
+  --rupee-green-light: #E8F5EE;
+  --navy: #0F1F3D;
+  --navy-mid: #1E3461;
+  --slate: #64748B;
+  --surface: #F8F7F4;
+  --white: #FFFFFF;
+  --border: #E5E3DC;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--surface); font-family: 'Inter', system-ui, sans-serif; color: var(--navy); }
+
+.rate-ticker {
+  animation: ticker 20s linear infinite;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.pulse-dot {
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.ai-glow {
+  box-shadow: 0 0 0 1px rgba(232, 117, 26, 0.3), 0 4px 24px rgba(232, 117, 26, 0.08);
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
