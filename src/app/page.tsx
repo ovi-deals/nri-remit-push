@@ -117,6 +117,36 @@ function MiniBar({value,max,color}:{value:number;max:number;color:string}) {
   );
 }
 
+// Splits the AI's bullet-formatted response into list items. Falls back to
+// rendering the raw text as a single line if the model ever ignores the
+// "• " formatting instruction (LLM output isn't 100% guaranteed even with
+// a strict system prompt), so the UI never shows something broken/empty.
+function parseBullets(text: string): string[] {
+  const lines = text
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => l.replace(/^[•\-*]\s*/, ""));
+  return lines.length > 0 ? lines : [text];
+}
+
+function AIBullets({text}:{text:string}) {
+  const bullets = parseBullets(text);
+  if (bullets.length === 1) {
+    return <p className="text-sm leading-relaxed" style={{color:"#0F1F3D"}}>{bullets[0]}</p>;
+  }
+  return (
+    <ul className="space-y-1.5">
+      {bullets.map((b,i)=>(
+        <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{color:"#0F1F3D"}}>
+          <span style={{color:"#E8751A",flexShrink:0,marginTop:1}}>•</span>
+          <span>{b}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function Home() {
   const { user, loading: userLoading, signOut } = useUser();
   const [amount, setAmount] = useState(1000);
@@ -406,7 +436,7 @@ export default function Home() {
                   <div className="h-3 rounded-md animate-pulse" style={{background:"#FEF3E8",width:"60%"}}/>
                 </div>
               ):(
-                <p className="text-sm leading-relaxed" style={{color:"#0F1F3D"}}>{aiMsg?.text}</p>
+                aiMsg?.text ? <AIBullets text={aiMsg.text}/> : null
               )}
             </div>
             <div className="flex-shrink-0 mt-0.5">
