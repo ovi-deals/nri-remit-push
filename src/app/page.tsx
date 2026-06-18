@@ -29,7 +29,7 @@ interface RateData {
   logo: string; color: string; bg: string; affiliateUrl: string;
 }
 interface RatesResponse {
-  midMarketRate: number; source: string; fetchedAt: string; amount: number;
+  midMarketRate: number; avg30d: number; source: string; fetchedAt: string; amount: number;
   providers: Omit<RateData, "logo" | "color" | "bg" | "affiliateUrl">[];
 }
 interface Alert {
@@ -38,11 +38,14 @@ interface Alert {
 }
 interface AIMessage { text: string; type: "tip" | "warning" | "good"; }
 
-const AVG_30D = 55.40; // TODO: replace with a real rolling average from rate_snapshots table
+// Used only until the first real API response arrives (brand-new deployments
+// with zero rate_snapshots rows yet). After that, the live avg30d from
+// /api/rates always wins. Deliberately not "accurate" — just a placeholder.
+const INITIAL_AVG_30D = 60.0;
 
-function getTrend(r: number) {
-  if (r > AVG_30D + 0.25) return "above";
-  if (r < AVG_30D - 0.25) return "below";
+function getTrend(r: number, avg: number) {
+  if (r > avg + 0.25) return "above";
+  if (r < avg - 0.25) return "below";
   return "neutral";
 }
 
@@ -75,22 +78,22 @@ async function fetchAISuggestion(prompt: string, context?: Record<string, unknow
   return data.message;
 }
 
-function makeAIPrompt(amount: number, rates: RateData[], alerts: Alert[]): { prompt: string; context: Record<string, unknown> } {
+function makeAIPrompt(amount: number, rates: RateData[], alerts: Alert[], avg30d: number): { prompt: string; context: Record<string, unknown> } {
   const best = rates[0];
-  const trend = getTrend(best.rate);
+  const trend = getTrend(best.rate, avg30d);
   const saving = best.theyGet - rates[rates.length - 1].theyGet;
   const hit = alerts.find(a => a.type === "rate" && a.value && best.rate >= a.value && a.active);
 
   const context = {
     amountAud: amount, bestProvider: best.name, bestRate: best.rate,
-    avg30d: AVG_30D, trend, savingVsWorst: saving,
+    avg30d, trend, savingVsWorst: saving,
     activeAlerts: alerts.filter(a => a.active).map(a => a.label),
   };
 
   if (hit) {
     return { prompt: `My rate alert for ${hit.value} just triggered — current rate is ${best.rate} via ${best.name}. Should I send now?`, context };
   }
-  return { prompt: `I'm looking at sending A$${amount} to India right now. Best rate is ${best.rate} via ${best.name} (30-day avg ${AVG_30D}). Give me a quick read on timing.`, context };
+  return { prompt: `I'm looking at sending A$${amount} to India right now. Best rate is ${best.rate} via ${best.name} (30-day avg ${avg30d}). Give me a quick read on timing.`, context };
 }
 
 function Sparkline({data,color}:{data:number[];color:string}) {
@@ -123,7 +126,7 @@ export default function Home() {
   // Default alerts shown for signed-out / first-time users. Once logged in,
   // these are replaced by whatever's saved in Supabase for that account.
   const [alerts, setAlerts] = useState<Alert[]>([
-    {id:"a1",type:"rate",label:"Alert when AUD/INR > 56.00",value:56.0,active:true},
+    {id:"a1",type:"rate",label:"Alert when AUD/INR > 68.00",value:68.0,active:true},
     {id:"a2",type:"reminder",label:"Monthly: ₹1,00,000 to parents on 1st",active:true},
   ]);
   const [showPanel, setShowPanel] = useState(false);
@@ -134,6 +137,7 @@ export default function Home() {
   const [toast, setToast] = useState<string|null>(null);
   const [clicked, setClicked] = useState<string|null>(null);
   const [rateHistory, setRateHistory] = useState<number[]>([]);
+  const [avg30d, setAvg30d] = useState(INITIAL_AVG_30D);
 
   // Load this user's saved alerts once we know they're signed in
   useEffect(() => {
@@ -163,11 +167,13 @@ export default function Home() {
       setLastUpdated(new Date());
       setRefreshing(false);
       setRateHistory(prev => [...prev, nr[0].rate].slice(-8));
+      const liveAvg = data.avg30d ?? nr[0].rate;
+      setAvg30d(liveAvg);
 
       setAiLoading(true);
-      const { prompt, context } = makeAIPrompt(amt, nr, alerts);
+      const { prompt, context } = makeAIPrompt(amt, nr, alerts, liveAvg);
       const text = await fetchAISuggestion(prompt, context);
-      const trend = getTrend(nr[0].rate);
+      const trend = getTrend(nr[0].rate, liveAvg);
       setAiMsg({ text, type: trend === "above" ? "good" : trend === "below" ? "warning" : "tip" });
       setAiLoading(false);
     } catch {
@@ -267,7 +273,7 @@ export default function Home() {
   };
 
   const best = rates[0];
-  const trend = best ? getTrend(best.rate) : "neutral";
+  const trend = best ? getTrend(best.rate, avg30d) : "neutral";
   const maxGet = best?.theyGet ?? 1;
 
   return (
@@ -314,7 +320,7 @@ export default function Home() {
               <span key={i} className="mx-4 flex items-center gap-1.5 text-xs">
                 <span style={{color:"#94A3B8"}}>{p.name}</span>
                 <span style={{color:"#E2E8F0"}}>{p.rate.toFixed(2)}</span>
-                <span style={{color:p.rate>=AVG_30D?"#22C55E":"#F87171",fontSize:10}}>{p.rate>=AVG_30D?"▲":"▼"}</span>
+                <span style={{color:p.rate>=avg30d?"#22C55E":"#F87171",fontSize:10}}>{p.rate>=avg30d?"▲":"▼"}</span>
               </span>
             ))}
           </div>
@@ -356,8 +362,7 @@ export default function Home() {
 
           <input type="range" min={50} max={10000} step={50} value={amount}
             onChange={e=>changeAmount(parseInt(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-            style={{accentColor:"#E8751A"}}/>
+            className="amount-slider w-full"/>
 
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -365,13 +370,13 @@ export default function Home() {
                trend==="below"?<TrendingDown size={13} color="#DC2626"/>:
                <Minus size={13} color="#64748B"/>}
               <span className="text-xs" style={{color:"#64748B"}}>
-                {trend==="above"?`${((best?.rate??0)-AVG_30D).toFixed(2)} above 30-day avg (${AVG_30D})`:
-                 trend==="below"?`${(AVG_30D-(best?.rate??0)).toFixed(2)} below 30-day avg (${AVG_30D})`:
-                 `Near 30-day average of ${AVG_30D}`}
+                {trend==="above"?`${((best?.rate??0)-avg30d).toFixed(2)} above 30-day avg (${avg30d})`:
+                 trend==="below"?`${(avg30d-(best?.rate??0)).toFixed(2)} below 30-day avg (${avg30d})`:
+                 `Near 30-day average of ${avg30d}`}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkline data={rateHistory.length>1?rateHistory:[best?.rate??AVG_30D,best?.rate??AVG_30D]} color={trend==="above"?"#0A7C4E":trend==="below"?"#DC2626":"#64748B"}/>
+              <Sparkline data={rateHistory.length>1?rateHistory:[best?.rate??avg30d,best?.rate??avg30d]} color={trend==="above"?"#0A7C4E":trend==="below"?"#DC2626":"#64748B"}/>
               <button onClick={()=>refresh()} className="p-1 rounded-lg" style={{background:"#F8F7F4"}}>
                 <RefreshCw size={12} color="#64748B" style={{animation:refreshing?"spin 1s linear infinite":""}}/>
               </button>
