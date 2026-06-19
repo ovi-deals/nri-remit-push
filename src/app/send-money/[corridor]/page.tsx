@@ -125,7 +125,7 @@ export default async function CorridorPage({ params }: { params: Params }) {
         </section>
 
         <footer className="text-center text-xs pt-4" style={{ color: "#94A3B8" }}>
-          NRI Remit · {corridor.nriPopulation} NRIs in {corridor.countryName} ({corridor.nriPopulationSource})
+          NRI Transfer · {corridor.nriPopulation} NRIs in {corridor.countryName} ({corridor.nriPopulationSource})
         </footer>
       </div>
     </div>
