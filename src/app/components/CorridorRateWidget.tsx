@@ -170,6 +170,16 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
         ))}
       </div>
 
+      <input
+        type="range"
+        min={10}
+        max={10000}
+        step={10}
+        value={amount}
+        onChange={(e) => setAmount(parseInt(e.target.value))}
+        className="amount-slider w-full mb-4"
+      />
+
       {data && (
         <div
           className="rounded-xl px-4 py-3 mb-4 flex items-center justify-between flex-wrap gap-2"
