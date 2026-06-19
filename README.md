@@ -1,6 +1,6 @@
-# NRI Remit
+# NRI Transfer
 
-Live AUD → INR rate comparator for NRIs in Australia, with AI-powered timing suggestions, rate/reminder alerts, and affiliate-link monetisation across Wise, Remitly, XE, OFX, and Instarem.
+Live exchange rate comparator for NRIs sending money to India from Australia, the UAE, USA, UK, Canada, and Singapore, with AI-powered timing suggestions, rate/reminder alerts, and affiliate-link monetisation across Wise, Remitly, XE, OFX, and Instarem.
 
 ## Stack
 
