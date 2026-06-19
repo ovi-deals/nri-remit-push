@@ -3,7 +3,7 @@ import { getAllCorridorSlugs } from "@/lib/corridors";
 
 // IMPORTANT: replace with your real production domain once deployed —
 // search engines need the canonical absolute URL, not a relative path.
-const BASE_URL = "https://nri-remit.vercel.app";
+const BASE_URL = "https://nritransfer.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const corridorPages = getAllCorridorSlugs().map((slug) => ({
