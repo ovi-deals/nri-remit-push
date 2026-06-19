@@ -18,6 +18,51 @@ const LOGO: Record<string, string> = { wise: "W", remitly: "R", xe: "X", ofx: "O
 const BG: Record<string, string> = { wise: "#E6F1FB", remitly: "#EEEDFE", xe: "#FAEEDA", ofx: "#EAF3DE", instarem: "#FAECE7" };
 const FG: Record<string, string> = { wise: "#0C447C", remitly: "#3C3489", xe: "#633806", ofx: "#27500A", instarem: "#712B13" };
 
+// Real provider favicons, fetched live from each company's own domain via
+// favicon.im — a purpose-built public favicon API (checks each site's real
+// favicon declarations first, falls back to Google's service internally as
+// a last resort). No logo files are stored or copied in this repo.
+const FAVICON_DOMAIN: Record<string, string> = {
+  wise: "wise.com",
+  remitly: "remitly.com",
+  xe: "xe.com",
+  ofx: "ofx.com",
+  instarem: "instarem.com",
+};
+function faviconUrl(domain: string) {
+  return `https://favicon.im/${domain}?larger=true`;
+}
+
+// Shows each provider's real favicon inside the existing colored circle.
+// Falls back to the plain letter if the favicon fails to load (network
+// hiccup, ad-blocker, etc.) so the UI never shows a broken image icon.
+function ProviderLogo({ id, size = 40, fontSize = 15 }: { id: string; size?: number; fontSize?: number }) {
+  const [failed, setFailed] = useState(false);
+  const bg = BG[id] || "#F1F5F9";
+  const color = FG[id] || "#64748B";
+  const letter = LOGO[id] || id[0].toUpperCase();
+  const domain = FAVICON_DOMAIN[id];
+
+  return (
+    <div
+      className="rounded-xl flex items-center justify-center font-bold overflow-hidden flex-shrink-0"
+      style={{ width: size, height: size, background: bg, color, fontSize }}
+    >
+      {failed || !domain ? letter : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={faviconUrl(domain)}
+          alt=""
+          width={Math.round(size * 0.55)}
+          height={Math.round(size * 0.55)}
+          onError={() => setFailed(true)}
+          style={{ objectFit: "contain" }}
+        />
+      )}
+    </div>
+  );
+}
+
 // No affiliate link yet for a provider in this corridor's data? Fall back to
 // their general homepage rather than breaking the button.
 const HOMEPAGE: Record<string, string> = {
@@ -34,6 +79,12 @@ const HOMEPAGE: Record<string, string> = {
 const CURRENCY_SYMBOLS: Record<string, string> = {
   AUD: "A$", USD: "$", GBP: "£", CAD: "C$", AED: "AED ", SGD: "S$",
 };
+
+// Real exchange rates don't need 6 decimal places — 2-4 is plenty and reads
+// as intentional rather than like a raw, unformatted float leaking through.
+function formatRate(n: number): string {
+  return n.toFixed(n < 10 ? 4 : 2);
+}
 
 export default function CorridorRateWidget({ corridor, currency }: { corridor: Corridor; currency?: string }) {
   const searchParams = useSearchParams();
@@ -120,9 +171,27 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
       </div>
 
       {data && (
-        <p className="text-xs mb-4" style={{ color: "#94A3B8" }}>
-          Mid-market rate: {data.midMarketRate} · 30-day avg: {data.avg30d} · updated live
-        </p>
+        <div
+          className="rounded-xl px-4 py-3 mb-4 flex items-center justify-between flex-wrap gap-2"
+          style={{ background: "#FEF3E8", border: "0.5px solid #FDDBB4" }}
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#B45A0F", letterSpacing: "0.06em" }}>
+              Live mid-market rate
+            </p>
+            <p className="text-lg font-bold" style={{ color: "#0F1F3D" }}>
+              1 {activeCurrency} = ₹{formatRate(data.midMarketRate)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#B45A0F", letterSpacing: "0.06em" }}>
+              30-day avg
+            </p>
+            <p className="text-sm font-semibold" style={{ color: "#475569" }}>
+              ₹{formatRate(data.avg30d)}
+            </p>
+          </div>
+        </div>
       )}
 
       <div className="space-y-2">
@@ -142,12 +211,7 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
               style={{ background: "#fff", border: `0.5px solid ${p.rank === 1 ? "#0A7C4E" : "#E5E3DC"}` }}
             >
               <div className="flex items-start gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center font-bold flex-shrink-0"
-                  style={{ background: BG[p.id] || "#F1F5F9", color: FG[p.id] || "#64748B", fontSize: 15 }}
-                >
-                  {LOGO[p.id] || p.id[0].toUpperCase()}
-                </div>
+                <ProviderLogo id={p.id} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1 gap-2">
                     <div className="flex items-center gap-2">
@@ -162,12 +226,22 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
                       ₹{p.theyGet.toLocaleString("en-IN")}
                     </span>
                   </div>
+                  <div className="mb-1.5">
+                    <span
+                      className="text-xs font-bold px-2 py-0.5 rounded-md inline-block"
+                      style={{
+                        background: p.rank === 1 ? "#E8F5EE" : "#F1F5F9",
+                        color: p.rank === 1 ? "#0A7C4E" : "#334155",
+                      }}
+                    >
+                      1 {activeCurrency} = ₹{formatRate(p.rate)}
+                    </span>
+                  </div>
                   {meta?.note && (
                     <p className="text-xs mb-1.5" style={{ color: "#64748B" }}>{meta.note}</p>
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-3 text-xs" style={{ color: "#64748B" }}>
-                      <span>{p.rate}/{activeCurrency}</span>
                       <span className="flex items-center gap-1"><Clock size={10} />{p.speed}</span>
                       <span>{p.fee > 0 ? `${currencySymbol}${p.fee} fee` : "No fee"}</span>
                     </div>
