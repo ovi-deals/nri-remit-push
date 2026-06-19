@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { CORRIDORS, getCorridorBySlug, getAllCorridorSlugs } from "@/lib/corridors";
 import CorridorRateWidget from "@/app/components/CorridorRateWidget";
 import CorridorConfirmBanner from "@/app/components/CorridorConfirmBanner";
@@ -60,9 +61,14 @@ export default async function CorridorPage({ params }: { params: Params }) {
             corridor jump to the right one instead of comparing rates that don't apply */}
         <CorridorConfirmBanner currentSlug={corridor.slug} />
 
-        {/* Interactive comparison — the actual product, embedded as a client island */}
+        {/* Interactive comparison — the actual product, embedded as a client island.
+            Suspense is required here because the widget reads useSearchParams()
+            (to respect a ?currency= override) — wrapping it keeps everything else
+            on this page statically prerendered at build time. */}
         <section className="mb-8">
-          <CorridorRateWidget corridor={corridor} />
+          <Suspense fallback={<RateWidgetSkeleton />}>
+            <CorridorRateWidget corridor={corridor} />
+          </Suspense>
         </section>
 
         {/* Real indexable content below the tool — this is what search engines
@@ -121,6 +127,18 @@ export default async function CorridorPage({ params }: { params: Params }) {
         <footer className="text-center text-xs pt-4" style={{ color: "#94A3B8" }}>
           NRI Remit · {corridor.nriPopulation} NRIs in {corridor.countryName} ({corridor.nriPopulationSource})
         </footer>
+      </div>
+    </div>
+  );
+}
+
+function RateWidgetSkeleton() {
+  return (
+    <div className="rounded-2xl p-5" style={{ background: "#fff", border: "0.5px solid #E5E3DC" }}>
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: "#F8F7F4" }} />
+        ))}
       </div>
     </div>
   );
