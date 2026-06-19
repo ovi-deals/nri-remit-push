@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { Clock, ExternalLink, Star } from "lucide-react";
+import { Clock, ExternalLink, Star, Sparkles } from "lucide-react";
 import type { Corridor } from "@/lib/corridors";
+import { fetchAISuggestion, AIBullets } from "@/lib/ai-advisor";
 
 interface ProviderRate {
   id: string; name: string; rate: number; youSend: number; theyGet: number;
@@ -86,6 +87,31 @@ function formatRate(n: number): string {
   return n.toFixed(n < 10 ? 4 : 2);
 }
 
+function makeCorridorAIPrompt(
+  corridor: Corridor,
+  amount: number,
+  currency: string,
+  providers: ProviderRate[],
+  avg30d: number
+): { prompt: string; context: Record<string, unknown> } {
+  const best = providers[0];
+  const worst = providers[providers.length - 1];
+  const trend = best.rate > avg30d + 0.25 ? "above" : best.rate < avg30d - 0.25 ? "below" : "neutral";
+  const saving = best && worst ? best.theyGet - worst.theyGet : 0;
+
+  const context = {
+    sourceCountry: corridor.countryName,
+    sourceCurrency: currency,
+    amount, bestProvider: best?.name, bestRate: best?.rate,
+    avg30d, trend, savingVsWorst: saving,
+  };
+
+  return {
+    prompt: `I'm sending ${currency} ${amount} from ${corridor.countryName} to India. Best rate right now is ${best?.rate} via ${best?.name} (30-day avg ${avg30d}). Give me a quick read on timing.`,
+    context,
+  };
+}
+
 export default function CorridorRateWidget({ corridor, currency }: { corridor: Corridor; currency?: string }) {
   const searchParams = useSearchParams();
 
@@ -105,17 +131,28 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
   const [amount, setAmount] = useState(1000);
   const [data, setData] = useState<RatesApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [aiText, setAiText] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const refresh = useCallback(async (amt: number) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/rates?amount=${amt}&currency=${activeCurrency}`, { cache: "no-store" });
-      if (res.ok) setData(await res.json());
+      if (res.ok) {
+        const json: RatesApiResponse = await res.json();
+        setData(json);
+
+        setAiLoading(true);
+        const { prompt, context } = makeCorridorAIPrompt(corridor, amt, activeCurrency, json.providers, json.avg30d);
+        fetchAISuggestion(prompt, context)
+          .then(setAiText)
+          .finally(() => setAiLoading(false));
+      }
     } catch {
       // keep last good data on screen rather than clearing it
     }
     setLoading(false);
-  }, [activeCurrency]);
+  }, [activeCurrency, corridor]);
 
   useEffect(() => { refresh(amount); }, [amount, refresh]);
 
@@ -201,6 +238,28 @@ export default function CorridorRateWidget({ corridor, currency }: { corridor: C
               ₹{formatRate(data.avg30d)}
             </p>
           </div>
+        </div>
+      )}
+
+      {(aiLoading || aiText) && (
+        <div
+          className="rounded-2xl p-4 mb-4"
+          style={{ background: "#fff", border: "0.5px solid rgba(232,117,26,0.3)", boxShadow: "0 4px 24px rgba(232,117,26,0.08)" }}
+        >
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles size={13} style={{ color: "#E8751A" }} />
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#E8751A", letterSpacing: "0.06em" }}>
+              AI rate advisor
+            </span>
+          </div>
+          {aiLoading && !aiText ? (
+            <div className="space-y-2">
+              <div className="h-3 rounded animate-pulse" style={{ background: "#F1F5F9", width: "85%" }} />
+              <div className="h-3 rounded animate-pulse" style={{ background: "#F1F5F9", width: "70%" }} />
+            </div>
+          ) : aiText ? (
+            <AIBullets text={aiText} />
+          ) : null}
         </div>
       )}
 
