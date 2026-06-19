@@ -47,39 +47,41 @@ body { background: var(--surface); font-family: 'Inter', system-ui, sans-serif; 
 
 /* Amount slider — appearance-none removes ALL native styling (track + thumb),
    so we have to supply both ourselves rather than relying on accent-color,
-   which only affects the native (non-appearance-none) rendering. */
+   which only affects the native (non-appearance-none) rendering. Track uses
+   a deliberately darker neutral than --border so it stays clearly visible
+   against white cards rather than nearly blending in. */
 input[type="range"].amount-slider {
   -webkit-appearance: none;
   appearance: none;
   height: 6px;
   border-radius: 999px;
-  background: var(--border);
+  background: #D8D4C8;
   outline: none;
   cursor: pointer;
 }
 input[type="range"].amount-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--saffron);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(15, 31, 61, 0.25);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(15, 31, 61, 0.35);
   cursor: pointer;
   margin-top: -1px;
 }
 input[type="range"].amount-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--saffron);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(15, 31, 61, 0.25);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(15, 31, 61, 0.35);
   cursor: pointer;
 }
 input[type="range"].amount-slider::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: var(--border);
+  background: #D8D4C8;
 }
