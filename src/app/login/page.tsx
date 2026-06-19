@@ -42,7 +42,7 @@ export default function LoginPage() {
             className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold"
             style={{ background: "#E8751A" }}
           >₹</div>
-          <span className="font-semibold text-lg" style={{ color: "#0F1F3D" }}>NRI Remit</span>
+          <span className="font-semibold text-lg" style={{ color: "#0F1F3D" }}>NRI Transfer</span>
         </div>
 
         <div className="rounded-2xl p-6" style={{ background: "#fff", border: "0.5px solid #E5E3DC" }}>
