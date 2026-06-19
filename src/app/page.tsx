@@ -365,7 +365,7 @@ function AustraliaHomeContent() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{background:"#E8751A"}}>₹</div>
-            <span className="text-white font-semibold text-sm">NRI Remit</span>
+            <span className="text-white font-semibold text-sm">NRI Transfer</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{background:"rgba(232,117,26,0.2)",color:"#FDDBB4"}}>AUS</span>
           </div>
           <div className="flex items-center gap-3">
