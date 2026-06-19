@@ -86,7 +86,7 @@ export default function CountryCurrencyGate({ children }: { children: React.Reac
       <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: "#fff", border: "0.5px solid #E5E3DC" }}>
         <div className="flex items-center gap-2 mb-6">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ background: "#E8751A" }}>₹</div>
-          <span className="font-semibold text-sm" style={{ color: "#0F1F3D" }}>NRI Remit</span>
+          <span className="font-semibold text-sm" style={{ color: "#0F1F3D" }}>NRI Transfer</span>
         </div>
 
         {step === "loading" && (
