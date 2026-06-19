@@ -9,6 +9,8 @@ import {
 import { useUser } from "@/lib/use-user";
 import CorridorConfirmBanner from "@/app/components/CorridorConfirmBanner";
 import CountryCurrencyGate from "@/app/components/CountryCurrencyGate";
+import { fetchAISuggestion, AIBullets } from "@/lib/ai-advisor";
+import PushNotificationToggle from "@/app/components/PushNotificationToggle";
 
 // Affiliate links — fill these in once each provider's affiliate program
 // approves you. Until then, these fall back to public homepages so the
@@ -88,19 +90,6 @@ function decorateProviders(data: RatesResponse): RateData[] {
   }));
 }
 
-async function fetchAISuggestion(prompt: string, context?: Record<string, unknown>): Promise<string> {
-  const res = await fetch("/api/ai-suggestion", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, context }),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    return data.message || "AI suggestions need a Cloudflare Worker or API key configured. See README.";
-  }
-  return data.message;
-}
-
 function makeAIPrompt(amount: number, rates: RateData[], alerts: Alert[], avg30d: number): { prompt: string; context: Record<string, unknown> } {
   const best = rates[0];
   const trend = getTrend(best.rate, avg30d);
@@ -137,36 +126,6 @@ function MiniBar({value,max,color}:{value:number;max:number;color:string}) {
     <div className="flex-1 h-1.5 rounded-full" style={{background:"#E5E3DC"}}>
       <div className="h-1.5 rounded-full transition-all duration-700" style={{width:`${pct}%`,background:color}}/>
     </div>
-  );
-}
-
-// Splits the AI's bullet-formatted response into list items. Falls back to
-// rendering the raw text as a single line if the model ever ignores the
-// "• " formatting instruction (LLM output isn't 100% guaranteed even with
-// a strict system prompt), so the UI never shows something broken/empty.
-function parseBullets(text: string): string[] {
-  const lines = text
-    .split("\n")
-    .map(l => l.trim())
-    .filter(Boolean)
-    .map(l => l.replace(/^[•\-*]\s*/, ""));
-  return lines.length > 0 ? lines : [text];
-}
-
-function AIBullets({text}:{text:string}) {
-  const bullets = parseBullets(text);
-  if (bullets.length === 1) {
-    return <p className="text-sm leading-relaxed" style={{color:"#0F1F3D"}}>{bullets[0]}</p>;
-  }
-  return (
-    <ul className="space-y-1.5">
-      {bullets.map((b,i)=>(
-        <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{color:"#0F1F3D"}}>
-          <span style={{color:"#E8751A",flexShrink:0,marginTop:1}}>•</span>
-          <span>{b}</span>
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -594,6 +553,19 @@ function AustraliaHomeContent() {
                 <X size={16} color="#64748B"/>
               </button>
             </div>
+
+            {user ? (
+              <div className="mb-5">
+                <PushNotificationToggle/>
+                <p className="text-xs mt-1.5" style={{color:"#94A3B8"}}>
+                  Alerts are also checked once a day automatically and sent by email if push isn&apos;t available on your device.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs mb-5 px-3 py-2.5 rounded-xl" style={{color:"#64748B",background:"#F8F7F4"}}>
+                Sign in to get notified by push or email when your alerts trigger — not just while this tab is open.
+              </p>
+            )}
 
             <div className="space-y-2 mb-5">
               {alerts.map(a=>(
