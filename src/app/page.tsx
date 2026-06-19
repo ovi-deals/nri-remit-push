@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useUser } from "@/lib/use-user";
 import CorridorConfirmBanner from "@/app/components/CorridorConfirmBanner";
+import CountryCurrencyGate from "@/app/components/CountryCurrencyGate";
 
 // Affiliate links — fill these in once each provider's affiliate program
 // approves you. Until then, these fall back to public homepages so the
@@ -197,7 +198,7 @@ function ProviderLogo({faviconSrc,letter,bg,color,size=40,fontSize=15}:{
   );
 }
 
-export default function Home() {
+function AustraliaHomeContent() {
   const { user, loading: userLoading, signOut } = useUser();
   const [amount, setAmount] = useState(1000);
   const [rates, setRates] = useState<RateData[]>([]);
@@ -681,5 +682,18 @@ export default function Home() {
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
     </div>
+  );
+}
+
+// The actual route export — the homepage is now purely the country+currency
+// confirmation gate. Once confirmed (this visit or a remembered past visit),
+// it redirects to the matching corridor page — including for Australia,
+// which has its own page at /send-money/australia-to-india. This avoids
+// duplicating the Australia-specific content in two places.
+export default function Home() {
+  return (
+    <CountryCurrencyGate>
+      <AustraliaHomeContent />
+    </CountryCurrencyGate>
   );
 }
