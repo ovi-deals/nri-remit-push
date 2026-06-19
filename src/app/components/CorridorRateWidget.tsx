@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Clock, ExternalLink, Star } from "lucide-react";
 import type { Corridor } from "@/lib/corridors";
 
@@ -27,7 +28,29 @@ const HOMEPAGE: Record<string, string> = {
   instarem: "https://www.instarem.com/",
 };
 
-export default function CorridorRateWidget({ corridor }: { corridor: Corridor }) {
+// Symbol lookup independent of which corridor we're on — needed because the
+// chosen currency can differ from the corridor's own default (e.g. someone
+// on the UAE page who actually wants to compare USD).
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  AUD: "A$", USD: "$", GBP: "£", CAD: "C$", AED: "AED ", SGD: "S$",
+};
+
+export default function CorridorRateWidget({ corridor, currency }: { corridor: Corridor; currency?: string }) {
+  const searchParams = useSearchParams();
+
+  // Priority: explicit prop > URL query param > saved preference > corridor's own currency.
+  // useSearchParams (not the server-side searchParams prop) is deliberate — it keeps this
+  // page statically generated at build time, which matters for the SEO work on these pages.
+  const urlCurrency = searchParams.get("currency");
+  const [savedCurrency, setSavedCurrency] = useState<string | null>(null);
+  useEffect(() => {
+    setSavedCurrency(localStorage.getItem("nri_currency_choice"));
+  }, []);
+
+  const requestedCurrency = currency || urlCurrency || savedCurrency || corridor.currency;
+  const activeCurrency = CURRENCY_SYMBOLS[requestedCurrency] ? requestedCurrency : corridor.currency;
+  const currencySymbol = CURRENCY_SYMBOLS[activeCurrency] || corridor.currencySymbol;
+
   const [amount, setAmount] = useState(1000);
   const [data, setData] = useState<RatesApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,13 +58,13 @@ export default function CorridorRateWidget({ corridor }: { corridor: Corridor })
   const refresh = useCallback(async (amt: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/rates?amount=${amt}&currency=${corridor.currency}`, { cache: "no-store" });
+      const res = await fetch(`/api/rates?amount=${amt}&currency=${activeCurrency}`, { cache: "no-store" });
       if (res.ok) setData(await res.json());
     } catch {
       // keep last good data on screen rather than clearing it
     }
     setLoading(false);
-  }, [corridor.currency]);
+  }, [activeCurrency]);
 
   useEffect(() => { refresh(amount); }, [amount, refresh]);
 
@@ -58,7 +81,7 @@ export default function CorridorRateWidget({ corridor }: { corridor: Corridor })
             You send
           </p>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold" style={{ color: "#0F1F3D" }}>{corridor.currencySymbol}</span>
+            <span className="text-3xl font-bold" style={{ color: "#0F1F3D" }}>{currencySymbol}</span>
             <input
               type="number"
               value={amount}
@@ -91,7 +114,7 @@ export default function CorridorRateWidget({ corridor }: { corridor: Corridor })
               border: `0.5px solid ${amount === v ? "#0F1F3D" : "#E5E3DC"}`,
             }}
           >
-            {corridor.currencySymbol}{v.toLocaleString()}
+            {currencySymbol}{v.toLocaleString()}
           </button>
         ))}
       </div>
@@ -144,9 +167,9 @@ export default function CorridorRateWidget({ corridor }: { corridor: Corridor })
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-3 text-xs" style={{ color: "#64748B" }}>
-                      <span>{p.rate}/{corridor.currency}</span>
+                      <span>{p.rate}/{activeCurrency}</span>
                       <span className="flex items-center gap-1"><Clock size={10} />{p.speed}</span>
-                      <span>{p.fee > 0 ? `${corridor.currencySymbol}${p.fee} fee` : "No fee"}</span>
+                      <span>{p.fee > 0 ? `${currencySymbol}${p.fee} fee` : "No fee"}</span>
                     </div>
                     <a
                       href={HOMEPAGE[p.id] || "#"}
