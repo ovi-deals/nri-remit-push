@@ -7,6 +7,7 @@ import {
   CheckCircle2, X, Send, RefreshCw, Info, Star, LogIn, LogOut
 } from "lucide-react";
 import { useUser } from "@/lib/use-user";
+import CorridorConfirmBanner from "@/app/components/CorridorConfirmBanner";
 
 // Affiliate links — fill these in once each provider's affiliate program
 // approves you. Until then, these fall back to public homepages so the
@@ -45,7 +46,7 @@ function faviconUrl(domain: string, size = 64) {
 
 interface RateData {
   id: string; name: string; rate: number; youSend: number; theyGet: number;
-  rank: number; fee: number; feeType: string; speed: string; cookieDays: string; cpa: string;
+  rank: number; fee: number; feeType: string; speed: string; cookieDays: string;
   logo: string; color: string; bg: string; affiliateUrl: string; faviconUrl: string;
 }
 interface RatesResponse {
@@ -407,6 +408,8 @@ export default function Home() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+
+        <CorridorConfirmBanner currentSlug="australia-to-india"/>
 
         {/* Amount Card */}
         <div className="rounded-2xl p-5" style={{background:"#fff",border:"0.5px solid #E5E3DC"}}>
