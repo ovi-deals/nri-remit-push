@@ -10,6 +10,8 @@ function readCookie(name: string): string | null {
 }
 
 const OVERRIDE_KEY = "nri_country_override";
+const CURRENCY_KEY = "nri_currency_choice";
+export const GATE_COMPLETE_KEY = "nri_gate_complete";
 
 /**
  * Detects the visitor's likely corridor from Vercel's geolocation cookie
@@ -19,14 +21,21 @@ const OVERRIDE_KEY = "nri_country_override";
  *  - detected: a corridor we have real content for, matching their IP
  *  - unsupported: we detected a country, but don't have a corridor page for it yet
  *  - unknown: no geo data available at all (e.g. local dev, non-Vercel host)
+ *
+ * Currency is tracked separately from country/corridor — a user can confirm
+ * "I'm in the UAE" but still choose to compare USD rates, for example.
  */
 export function useDetectedCorridor() {
   const [corridor, setCorridor] = useState<Corridor | null>(null);
   const [detectedCountryCode, setDetectedCountryCode] = useState<string | null>(null);
   const [status, setStatus] = useState<"detecting" | "detected" | "unsupported" | "unknown">("detecting");
   const [confirmed, setConfirmed] = useState(false);
+  const [currency, setCurrency] = useState<string | null>(null);
 
   useEffect(() => {
+    const savedCurrency = localStorage.getItem(CURRENCY_KEY);
+    if (savedCurrency) setCurrency(savedCurrency);
+
     const override = localStorage.getItem(OVERRIDE_KEY);
     if (override) {
       const c = CORRIDORS.find((x) => x.slug === override);
@@ -65,10 +74,21 @@ export function useDetectedCorridor() {
     setConfirmed(true);
   };
 
-  const clearOverride = () => {
-    localStorage.removeItem(OVERRIDE_KEY);
-    setConfirmed(false);
+  const chooseCurrency = (code: string) => {
+    localStorage.setItem(CURRENCY_KEY, code);
+    setCurrency(code);
   };
 
-  return { corridor, detectedCountryCode, status, confirmed, confirmCorridor, overrideCorridor, clearOverride };
+  const clearOverride = () => {
+    localStorage.removeItem(OVERRIDE_KEY);
+    localStorage.removeItem(CURRENCY_KEY);
+    localStorage.removeItem(GATE_COMPLETE_KEY);
+    setConfirmed(false);
+    setCurrency(null);
+  };
+
+  return {
+    corridor, detectedCountryCode, status, confirmed, currency,
+    confirmCorridor, overrideCorridor, clearOverride, chooseCurrency,
+  };
 }
