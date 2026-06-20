@@ -31,6 +31,7 @@ export interface Corridor {
   providers: CorridorProvider[]; // ordered by relevance to THIS corridor
   faqs: { q: string; a: string }[];
   localNotes: string[];          // corridor-specific facts (FEMA applies to all, but local context differs)
+  howItWorks: string[];          // 3-4 step explainer, matches the pattern most competitor sites use
 }
 
 export const CORRIDORS: Corridor[] = [
@@ -43,8 +44,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "A$",
     nriPopulation: "780,000+",
     nriPopulationSource: "Estimate based on 2021 Australian Census Indian-ancestry data",
-    metaTitle: "Send Money to India from Australia — Compare Live AUD to INR Rates",
-    metaDescription: "Compare live AUD to INR exchange rates across Wise, Remitly, XE, OFX and Instarem. Built for the Indian-Australian community — find the best rate before you transfer.",
+    metaTitle: "Compare Rates to India from Australia — AUD to INR Money Transfer",
+    metaDescription: "Compare live rates to India from Australia across Wise, Remitly, XE, OFX and Instarem. See the best AUD to INR exchange rate today before you transfer.",
     h1: "Send money to India from Australia",
     intro: "Australia is home to one of the fastest-growing Indian diaspora communities globally, concentrated in Sydney, Melbourne, and Perth. The AUD to INR corridor is well served by digital providers, but rates and fees vary meaningfully between them on any given day.",
     providers: [
@@ -63,6 +64,12 @@ export const CORRIDORS: Corridor[] = [
       "Sydney, Melbourne, and Perth have the largest Indian-Australian populations and the most competitive provider coverage",
       "Australian banks typically charge AUD 15-30 plus a wide exchange margin for international wire transfers — usually the most expensive option",
     ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live AUD to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better AUD/INR rate before sending",
+    ],
   },
   {
     slug: "uae-to-india",
@@ -73,8 +80,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "AED ",
     nriPopulation: "3.55 million",
     nriPopulationSource: "Ministry of External Affairs, Government of India, 2025",
-    metaTitle: "Send Money to India from UAE — Compare AED to INR Rates",
-    metaDescription: "Compare AED to INR exchange rates across Wise, Remitly, and other providers serving the UAE-India corridor — one of the highest-volume remittance routes in the world.",
+    metaTitle: "Compare Rates to India from UAE — AED to INR Money Transfer",
+    metaDescription: "Compare rates to India from the UAE across Wise, Remitly and other providers. See live AED to INR exchange rates on one of the world's busiest remittance corridors.",
     h1: "Send money to India from the UAE",
     intro: "The UAE is home to the largest NRI population of any country, and the AED to India corridor is one of the busiest remittance routes in the world. Alongside global digital apps, traditional exchange houses like Al Ansari and LuLu Exchange remain widely used for cash pickup and walk-in transfers.",
     providers: [
@@ -91,6 +98,12 @@ export const CORRIDORS: Corridor[] = [
       "UAE banks (Emirates NBD, FAB, Mashreq, ADCB) typically apply a 1-2% margin above mid-market plus a flat fee of AED 25-100 per transfer",
       "India is the single largest remittance destination from the UAE by volume",
     ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live AED to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better AED/INR rate before sending",
+    ],
   },
   {
     slug: "usa-to-india",
@@ -101,8 +114,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "$",
     nriPopulation: "2.08 million NRIs (5.4 million incl. PIOs)",
     nriPopulationSource: "Ministry of External Affairs, Government of India, 2025",
-    metaTitle: "Send Money to India from USA — Compare USD to INR Rates",
-    metaDescription: "Compare USD to INR exchange rates across Wise, Remitly, XE and other providers for NRIs in the United States sending money home to India.",
+    metaTitle: "Compare Rates to India from USA — USD to INR Money Transfer",
+    metaDescription: "Compare rates to India from the USA across Wise, Remitly, XE and more. See live USD to INR exchange rates and find the best deal before you send.",
     h1: "Send money to India from the USA",
     intro: "The United States has the largest overseas Indian population in the world, heavily concentrated in technology, healthcare, and academia. The USD to INR corridor is one of the most competitive remittance markets globally, with dozens of providers vying for this volume.",
     providers: [
@@ -119,6 +132,12 @@ export const CORRIDORS: Corridor[] = [
       "The US-India corridor supports UPI-linked payouts through several providers, letting recipients receive funds directly into UPI apps",
       "H-1B and OPT visa holders sending money home should keep transfer records for any future tax residency determinations",
     ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live USD to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better USD/INR rate before sending",
+    ],
   },
   {
     slug: "uk-to-india",
@@ -129,8 +148,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "£",
     nriPopulation: "369,000 NRIs (1.86 million incl. PIOs)",
     nriPopulationSource: "Ministry of External Affairs, Government of India, 2025",
-    metaTitle: "Send Money to India from UK — Compare GBP to INR Rates",
-    metaDescription: "Compare GBP to INR exchange rates across Wise, Remitly, XE and other providers for British Indians and NRIs sending money to India from the UK.",
+    metaTitle: "Compare Rates to India from UK — GBP to INR Money Transfer",
+    metaDescription: "Compare rates to India from the UK across Wise, Remitly, XE and more. See live GBP to INR exchange rates for British Indians sending money home.",
     h1: "Send money to India from the UK",
     intro: "British Indians form one of the longest-established and most economically successful diaspora communities in the UK. The GBP to INR corridor benefits from intense competition between digital providers, keeping rates relatively tight for senders.",
     providers: [
@@ -147,6 +166,12 @@ export const CORRIDORS: Corridor[] = [
       "London, Leicester, and Birmingham have the largest British Indian populations and the deepest provider coverage",
       "UK banks settling via SWIFT can take 2-4 business days and often charge £15-30 in wire fees alone",
     ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live GBP to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better GBP/INR rate before sending",
+    ],
   },
   {
     slug: "canada-to-india",
@@ -157,8 +182,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "C$",
     nriPopulation: "2.87 million (incl. PIOs)",
     nriPopulationSource: "Ministry of External Affairs, Government of India, 2025",
-    metaTitle: "Send Money to India from Canada — Compare CAD to INR Rates",
-    metaDescription: "Compare CAD to INR exchange rates across Wise, Remitly, XE and other providers for Indo-Canadians sending money to India.",
+    metaTitle: "Compare Rates to India from Canada — CAD to INR Money Transfer",
+    metaDescription: "Compare rates to India from Canada across Wise, Remitly, XE and more. See live CAD to INR exchange rates for Indo-Canadians sending money home.",
     h1: "Send money to India from Canada",
     intro: "Indo-Canadians are one of the largest and fastest-growing non-European ethnic communities in Canada, with major hubs in Toronto, Vancouver, and Calgary. The CAD to INR corridor is well-served by digital providers offering rates well below traditional Canadian banks.",
     providers: [
@@ -175,6 +200,12 @@ export const CORRIDORS: Corridor[] = [
       "Toronto (Brampton, Mississauga) and Vancouver (Surrey) have the largest Indo-Canadian populations",
       "Indo-Canadians are the second-largest non-European ethnic group in Canada, supporting strong provider competition on this corridor",
     ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live CAD to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better CAD/INR rate before sending",
+    ],
   },
   {
     slug: "singapore-to-india",
@@ -185,8 +216,8 @@ export const CORRIDORS: Corridor[] = [
     currencySymbol: "S$",
     nriPopulation: "Significant Tamil and broader Indian community",
     nriPopulationSource: "Singapore Department of Statistics, general estimate",
-    metaTitle: "Send Money to India from Singapore — Compare SGD to INR Rates",
-    metaDescription: "Compare SGD to INR exchange rates across Wise, Remitly, XE and other providers for the Indian community in Singapore sending money home.",
+    metaTitle: "Compare Rates to India from Singapore — SGD to INR Money Transfer",
+    metaDescription: "Compare rates to India from Singapore across Wise, Remitly, XE and more. See live SGD to INR exchange rates for the Indian community in Singapore.",
     h1: "Send money to India from Singapore",
     intro: "Singapore's Indian community, including a long-established Tamil population, is well served by digital remittance providers offering fast, transparent SGD to INR transfers as an alternative to traditional bank wires and money changers.",
     providers: [
@@ -200,6 +231,12 @@ export const CORRIDORS: Corridor[] = [
     ],
     localNotes: [
       "Singapore's Tamil community has deep ties to South India, particularly Tamil Nadu",
+    ],
+    howItWorks: [
+      "Enter how much you want to send — we pull live SGD to INR rates from every provider at once",
+      "Compare the actual INR amount each provider sends, not just the headline rate — fees and margins vary more than people expect",
+      "Click through to your chosen provider and complete the transfer on their site",
+      "Set a rate alert if you'd rather wait for a better SGD/INR rate before sending",
     ],
   },
 ];
