@@ -53,10 +53,28 @@ export default async function CorridorPage({ params }: { params: Params }) {
         defaultThreshold={DEFAULT_ALERT_THRESHOLD[corridor.currency] ?? 80.0}
       />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Breadcrumb-ish back link — helps both users and crawlers understand site structure */}
-        <Link href="/" className="text-xs font-medium mb-4 inline-block" style={{ color: "#64748B" }}>
+        {/* Anchor link to the "Other corridors" section further down this
+            same page — there's no separate corridor-listing page, and
+            sending people through the country-confirmation gate at "/"
+            would be a worse experience for someone already mid-comparison. */}
+        <a href="#other-corridors" className="text-xs font-medium mb-4 inline-block" style={{ color: "#64748B" }}>
           ← All corridors
-        </Link>
+        </a>
+
+        {/* BreadcrumbList structured data for search result breadcrumb display */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "NRI Transfer", item: "https://nritransfer.com" },
+                { "@type": "ListItem", position: 2, name: `${corridor.countryName} to India`, item: `https://nritransfer.com/send-money/${corridor.slug}` },
+              ],
+            }),
+          }}
+        />
 
         <header className="mb-6">
           <p className="text-sm font-semibold mb-1" style={{ color: "#E8751A" }}>
@@ -82,6 +100,28 @@ export default async function CorridorPage({ params }: { params: Params }) {
           <Suspense fallback={<RateWidgetSkeleton />}>
             <CorridorRateWidget corridor={corridor} />
           </Suspense>
+        </section>
+
+        {/* "How it works" — matches a pattern most comparison sites use, and
+            gives search engines a clean, numbered explainer block that's a
+            good fit for HowTo-style rich results. */}
+        <section className="mb-8">
+          <h2 className="text-base font-bold mb-3" style={{ color: "#0F1F3D" }}>
+            How to compare rates to India from {corridor.countryName}
+          </h2>
+          <ol className="space-y-3">
+            {corridor.howItWorks.map((step, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                  style={{ background: "#FEF3E8", color: "#E8751A" }}
+                >
+                  {i + 1}
+                </span>
+                <span className="text-sm leading-relaxed" style={{ color: "#475569" }}>{step}</span>
+              </li>
+            ))}
+          </ol>
         </section>
 
         {/* Real indexable content below the tool — this is what search engines
@@ -117,9 +157,25 @@ export default async function CorridorPage({ params }: { params: Params }) {
           <p className="text-xs mt-4" style={{ color: "#94A3B8" }}>
             This is general information, not financial, tax, or legal advice. Speak with a qualified professional about your specific situation.
           </p>
+          {/* FAQPage structured data — lets Google potentially show these
+              Q&As directly as rich results under the search listing. */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: corridor.faqs.map((faq) => ({
+                  "@type": "Question",
+                  name: faq.q,
+                  acceptedAnswer: { "@type": "Answer", text: faq.a },
+                })),
+              }),
+            }}
+          />
         </section>
 
-        <section className="mb-8">
+        <section className="mb-8" id="other-corridors">
           <h2 className="text-base font-bold mb-3" style={{ color: "#0F1F3D" }}>
             Other corridors
           </h2>
