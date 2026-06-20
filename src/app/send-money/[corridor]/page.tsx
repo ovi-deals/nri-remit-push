@@ -5,6 +5,14 @@ import { Suspense } from "react";
 import { CORRIDORS, getCorridorBySlug, getAllCorridorSlugs } from "@/lib/corridors";
 import CorridorRateWidget from "@/app/components/CorridorRateWidget";
 import CorridorConfirmBanner from "@/app/components/CorridorConfirmBanner";
+import CorridorHeaderAndAlerts from "@/app/components/CorridorHeaderAndAlerts";
+
+// Sensible "alert me if it goes above this" starting point per currency —
+// roughly current-ish levels, just enough to pre-fill the alert form with
+// something reasonable rather than an empty/zero default.
+const DEFAULT_ALERT_THRESHOLD: Record<string, number> = {
+  AUD: 68.0, USD: 89.0, GBP: 113.0, CAD: 64.0, AED: 24.5, SGD: 66.0,
+};
 
 // Pre-render every corridor at build time — this is what makes each one a
 // real, independently indexable static page rather than something only
@@ -39,6 +47,11 @@ export default async function CorridorPage({ params }: { params: Params }) {
 
   return (
     <div className="min-h-screen" style={{ background: "#F8F7F4" }}>
+      <CorridorHeaderAndAlerts
+        countryCode={corridor.countryCode}
+        currency={corridor.currency}
+        defaultThreshold={DEFAULT_ALERT_THRESHOLD[corridor.currency] ?? 80.0}
+      />
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Breadcrumb-ish back link — helps both users and crawlers understand site structure */}
         <Link href="/" className="text-xs font-medium mb-4 inline-block" style={{ color: "#64748B" }}>
